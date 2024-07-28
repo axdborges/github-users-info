@@ -1,25 +1,35 @@
-import { IUserResponse } from "../Interfaces";
-import { PrismaClient } from "@prisma/client";
+import axios from "axios";
 
-const prisma = new PrismaClient();
+export default class UsersService {
+  static async listUsers(since: string) {
+    const response = await axios.get(
+      `https://api.github.com/users?since=${since}`,
+      // { headers },
+    );
 
-export default class UsersService { 
-	static async listUsers(): Promise<IUserResponse[]> {
-		return await prisma.user.findMany();
-	}
+    const finalResponse = {
+      link: response.headers.link,
+      users: response.data,
+    };
 
-	static async listUsersByQuery(query: string): Promise<IUserResponse[]> {
-		return prisma.user.findMany({
-      where: {
-        OR: [
-          { name: { contains: query } },
-          { city: { contains: query } },
-          { country: { contains: query } },
-          { favorite_sport: { contains: query } }
-        ]
-      }
-    });
-	}
+    return finalResponse;
+  }
 
+  static async userDetails(username: string) {
+    const response = await axios.get(
+      `https://api.github.com/users/${username}`,
+      // { headers },
+    );
 
+    return response.data;
+  }
+
+  static async userRepos(username: string) {
+    const response = await axios.get(
+      `https://api.github.com/users/${username}/repos`,
+      // { headers },
+    );
+
+    return response.data;
+  }
 }
